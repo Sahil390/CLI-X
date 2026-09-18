@@ -1,0 +1,68 @@
+# Dependencies
+node_modules/
+node_modules
+**/node_modules/
+
+# Build outputs
+build/
+dist/
+*.tar.gz
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Lock files (optional — include if you want reproducible installs; exclude if not)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+
+# Coverage / test artifacts
+coverage/
+.nyc_output/
+
+# Temporary
+.tmp/
+.temp/
+.cache/
+
+# Compiled outputs in cli/backend
+cli/build/
+cli/dist/
+cli/*.tgz
+backend/__pycache__/
+backend/*.egg-info/
+
+# Misc
+*.pid
+*.seed
+*.pid.lock
