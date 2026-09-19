@@ -1,7 +1,7 @@
 {
   "type": "module",
-  "name": "website-builder",
-  "version": "0.1.0",
+  "name": "wb-site-builder-cli",
+  "version": "1.0.0",
   "description": "Full-fledged CLI website builder with TypeScript frontend and Python backend",
   "main": "dist/cli.js",
   "bin": {
