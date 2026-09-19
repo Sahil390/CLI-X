@@ -14,7 +14,7 @@ export function resolveConfigPath(): string {
 }
 
 export function resolveSourceDir(configInput?: string): string {
-  return path.join(projectRoot(), configInput || 'src');
+  return path.join(projectRoot(), configInput || '.');
 }
 
 export function resolveOutputDir(configOutput?: string): string {

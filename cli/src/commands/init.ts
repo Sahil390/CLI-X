@@ -66,7 +66,7 @@ export async function init(name?: string, options: { template?: string; interact
     if (!json) log.success(`Created basic site in ${projectName}/`);
   }
 
-  const config = { name: projectName, template, build: { input: 'src', output: 'dist' }, deploy: { target: 'local' } };
+  const config = { name: projectName, template, build: { input: '.', output: 'dist' }, deploy: { target: 'local' } };
   await writeJson(path.join(targetDir, 'website-builder.config.json'), config as any);
   if (!json) log.success('Created website-builder.config.json');
 
