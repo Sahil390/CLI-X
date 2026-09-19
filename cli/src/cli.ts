@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import path from 'path';
+import { dirname } from 'path';
 import { init } from './commands/init.js';
 import { build } from './commands/build.js';
 import { dev } from './commands/dev.js';
@@ -13,8 +14,9 @@ import { loadConfig } from './utils/config.js';
 import { config } from './commands/config.js';
 import { templates } from './commands/templates.js';
 
-const __filename = path.resolve('src/cli.ts');
-const __dirname = path.dirname(__filename);
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const program = new Command();
 

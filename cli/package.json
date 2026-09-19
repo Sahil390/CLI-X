@@ -4,12 +4,11 @@
   "description": "Full-fledged CLI website builder with TypeScript frontend and Python backend",
   "main": "dist/cli.js",
   "bin": {
-    "wb": "bin/website-builder",
-    "website-builder": "bin/website-builder"
+    "wb": "./dist/cli.js",
+    "website-builder": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc",
-    "postinstall": "echo 'Installing Python backend...'; python3 -m pip install -q -r ../backend/requirements.txt 2>/dev/null || echo 'Python backend install skipped (install manually with: pip install -r backend/requirements.txt)'",
     "prepublishOnly": "npm run build",
     "test": "jest",
     "link": "npm link"
@@ -18,7 +17,8 @@
     "dist/",
     "bin/",
     "src/",
-    "../backend/"
+    "backend/",
+    "shared/"
   ],
   "keywords": [
     "cli",
