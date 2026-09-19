@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "wb-site-builder-cli",
+  "name": "agentic-site-builder-cli",
   "version": "1.0.0",
   "description": "Full-fledged CLI website builder with TypeScript frontend and Python backend",
   "main": "dist/cli.js",
