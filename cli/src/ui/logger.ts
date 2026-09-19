@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 
 const NO_COLOR = process.env.NO_COLOR || process.env.FORCE_COLOR === '0';
-const IS_TTY = process.stdout.isTTY && !NO_COLOR;
+const IS_TTY = process.stderr.isTTY && !NO_COLOR;
 
 function strip(s: string): string {
   // Strip ANSI and common emoji for non-interactive

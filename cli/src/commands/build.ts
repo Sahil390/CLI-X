@@ -17,7 +17,7 @@ export async function build(options: { watch?: boolean; json?: boolean } = {}): 
     spinner.fail(`Source directory not found: ${inputDir}`);
     log.error('Run "wb init" first or create a src/ directory.');
     const msg = `Build failed: source directory missing (${inputDir}). State: inputDir=${inputDir}, outputDir=${outputDir}`;
-    if (options.json) console.log(JSON.stringify({ error: msg, code: 'BUILD_ERROR', state: { inputDir, outputDir } }));
+    if (options.json) console.error(JSON.stringify({ error: msg, code: 'BUILD_ERROR', state: { inputDir, outputDir } }));
     else console.error(msg);
     process.exit(1);
   }
@@ -34,7 +34,7 @@ export async function build(options: { watch?: boolean; json?: boolean } = {}): 
   if (!result.success || !result.data) {
     stopWithFailure(spinner, 'Build failed');
     const msg = `Build failed: ${result.error || 'Unknown error'}. State: inputDir=${inputDir}, outputDir=${outputDir}`;
-    if (options.json) console.log(JSON.stringify({ error: msg, code: 'BUILD_ERROR', state: { inputDir, outputDir } }));
+    if (options.json) console.error(JSON.stringify({ error: msg, code: 'BUILD_ERROR', state: { inputDir, outputDir } }));
     else log.error(msg);
     process.exit(1);
   }
