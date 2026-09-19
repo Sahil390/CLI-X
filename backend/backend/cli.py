@@ -4,13 +4,16 @@ import os
 import sys
 import time
 
-from auth.oauth import authenticate
-from auth.session import SessionManager
-from build.engine import build_project
-from deploy.orchestrator import deploy_project
-from ai.generator import generate_site
-from config.loader import load_global_config, load_project_config, save_global_config
+from backend.auth.oauth import authenticate
+from backend.auth.session import SessionManager
+from backend.build.engine import build_project
+from backend.deploy.orchestrator import deploy_project
+from backend.ai.generator import generate_site
+from backend.config.loader import load_global_config, load_project_config, save_global_config
 
+
+IS_TTY = sys.stdout.isatty()
+class Exit: OK, GENERAL=0,1
 @click.group()
 def cli():
     """Website Builder - Python Backend"""
@@ -32,7 +35,7 @@ def login(provider):
         save_global_config(cfg)
     else:
         click.echo(click.style(f"Login failed: {result.get('error')}", fg='red'))
-        sys.exit(1)
+        sys.exit(Exit.GENERAL)
 
 @cli.command()
 @click.option('--target', required=True, help='Deployment target')
@@ -48,7 +51,7 @@ def deploy(target, config):
         click.echo(click.style(f"Deployed: {result.get('url', 'N/A')}", fg='green'))
     else:
         click.echo(click.style(f"Failed: {result.get('message')}", fg='red'))
-        sys.exit(1)
+        sys.exit(Exit.GENERAL)
 
 @cli.command()
 @click.option('--input', required=True, help='Input directory')

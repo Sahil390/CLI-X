@@ -1,6 +1,13 @@
-#!/usr/bin/env bash
-set -euo pipefail
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-cd "$PROJECT_DIR/cli"
-exec node -r ts-node/register src/cli.ts "$@"
+#!/usr/bin/env node
+// Production bin: runs compiled dist/cli.js, no ts-node required at runtime
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import path from 'path';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+try {
+  await import(path.resolve(__dirname, '../cli/dist/cli.js'));
+} catch (e) {
+  process.stderr.write(`website-builder: failed to start — ${e.message}\n`);
+  process.stderr.write('  Fix: rebuild with "npm run build" then retry.\n');
+  process.exit(1);
+}
