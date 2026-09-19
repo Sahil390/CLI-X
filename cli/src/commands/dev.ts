@@ -1,8 +1,10 @@
 import http from 'http';
 import fs from 'fs';
 import path from 'path';
+import readline from 'readline';
 import chokidar from 'chokidar';
 import { WebSocketServer, WebSocket } from 'ws';
+import { callPython } from '../bridge/python.js';
 import { log } from '../ui/logger.js';
 import { resolveSourceDir, resolveOutputDir } from '../utils/path.js';
 import { fileExists } from '../utils/fs.js';
@@ -76,13 +78,19 @@ export async function dev(options: DevServerOptions & { json?: boolean } = {}): 
     persistent: true,
   });
 
+  // Mute minor watcher logs during REPL to preserve prompt visual flow; keep errors/reload events
   watcher.on('change', (filePath) => {
-    log.dim(`File changed: ${filePath}`);
+    // Only log reload events (major file changes), suppress noisy continuous updates
+    if (filePath.endsWith('.html')) {
+      log.dim(`🔄 Reload: ${path.basename(filePath)}`);
+    }
     broadcastChange(filePath);
   });
 
   watcher.on('add', (filePath) => {
-    log.dim(`File added: ${filePath}`);
+    if (filePath.endsWith('.html')) {
+      log.dim(`📥 Added: ${path.basename(filePath)}`);
+    }
     broadcastChange(filePath);
   });
 
@@ -94,5 +102,66 @@ export async function dev(options: DevServerOptions & { json?: boolean } = {}): 
       log.success(`Dev server running at http://localhost:${port}`);
       resolve();
     });
+  });
+
+  // --- AI REPL (god-mode) ---
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    prompt: '✨ AI > ',
+  });
+
+  // Clear terminal clutter and show persistent prompt
+  console.clear();
+  console.log('╔══════════════════════════════════════════════════════════════╗');
+  console.log('║           🌐  AI REPL  —  Interactive Site Builder          ║');
+  console.log('╚══════════════════════════════════════════════════════════════╝\n');
+  log.info('Type an instruction and press Enter. Type "exit" or "quit" to close.\n');
+
+  rl.prompt();
+
+  rl.on('line', async (line) => {
+    const input = line.trim();
+
+    if (input === 'exit' || input === 'quit') {
+      console.log('\n👋 Shutting down dev server...');
+      server.close();
+      rl.close();
+      process.exit(0);
+    }
+
+    if (!input) {
+      rl.prompt();
+      return;
+    }
+
+    // Temporarily pause prompt during generation
+    rl.pause();
+    console.log('⏳ Generating...');
+
+    try {
+      const result = await callPython({
+        modulePath: 'backend.cli',
+        args: ['ai', '--prompt', input, '--output', 'src', '--style', 'modern'],
+      });
+
+      if (result.success) {
+        console.log('✅ Generated successfully — files updated.');
+      } else {
+        console.error('❌ Generation failed:', result.error || 'Unknown error');
+      }
+    } catch (e: any) {
+      console.error('❌ Error:', e.message || e);
+    }
+
+    // Re-display prompt for chaining
+    rl.resume();
+    rl.prompt();
+  });
+
+  rl.on('close', () => {
+    console.log('\n👋 REPL closed.');
+    server.close();
+    process.exit(0);
   });
 }
