@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "agentic-site-builder-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Full-fledged CLI website builder with TypeScript frontend and Python backend",
   "main": "dist/cli.js",
   "bin": {
@@ -15,11 +15,11 @@
     "link": "npm link"
   },
   "files": [
-    "dist/",
+    "dist",
     "bin/",
     "src/",
-    "backend/",
-    "shared/"
+    "backend",
+    "shared"
   ],
   "keywords": [
     "cli",

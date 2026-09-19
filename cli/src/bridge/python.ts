@@ -30,8 +30,8 @@ function getPackageDir(): string {
   const __dirname = dirname(__filename);
   // If running from src/ via ts-node, go up one extra; if from dist/ go up two to package root
   // We detect by checking if ../backend exists relative to __dirname
-  const candidate = resolve(__dirname, '..', '..');
-  const fromDist = resolve(__dirname, '..', '..', 'backend');
+  const candidate = resolve(__dirname, '..', '..', '..', 'backend');
+  const fromDist = resolve(__dirname, '../backend/backend/cli.py');
   if (existsSync(fromDist)) return candidate;
   // src/ case: __dirname = cli/src/bridge/ → go up 2 = cli/
   const srcCandidate = resolve(__dirname, '..', '..');
