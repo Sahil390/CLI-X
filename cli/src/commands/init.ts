@@ -1,9 +1,14 @@
 import fse from 'fs-extra';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import { log } from '../ui/logger.js';
 import { copyDir, ensureDir, writeJson, fileExists, readJson } from '../utils/fs.js';
 import { projectRoot } from '../utils/path.js';
 import type { TemplateInfo } from '../types/index.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const TEMPLATES: TemplateInfo[] = [
   { name: 'default', description: 'A clean static site with HTML, CSS, and JavaScript', pages: ['index.html'], hasStyles: true, hasScripts: true },
