@@ -7,10 +7,14 @@ import { deploy } from './commands/deploy.js';
 import { login } from './commands/login.js';
 import { logout } from './commands/logout.js';
 import { ai } from './commands/ai.js';
+import { doctorCmd } from './commands/doctor.js';
+import { loadConfig } from './utils/config.js';
+import { machineOutput } from './utils/output.js';
 import { config } from './commands/config.js';
 import { templates } from './commands/templates.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { loadConfig } from './utils/config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,13 +29,16 @@ program
   .option('--verbose', 'Enable verbose output', false)
   .option('--no-color', 'Disable colored output', false)
   .option('--json', 'Output machine-readable JSON', false)
+  .option('--quiet', 'Suppress non-error output', false)
   .showSuggestionAfterError();
 
 function handleError(err: unknown): never {
   const msg = err instanceof Error ? err.message : String(err);
-  const out = (program.opts().json ? JSON.stringify({ error: msg, code: 'CLI_ERROR' }) : `Error: ${msg}`);
+  const code = (err as any)?.exitCode || (msg.includes('required') ? 2 : 1);
+  const out = (program.opts().json ? JSON.stringify({ error: msg, code: 'CLI_ERROR', exitCode: code }) : `Error: ${msg}`);
   console.error(out);
-  process.exit(1);
+  if (program.opts().verbose && err instanceof Error) console.error(err.stack);
+  process.exit(code);
 }
 
 program
@@ -141,6 +148,14 @@ program
     try {
       await templates(action || (options.list ? 'list' : undefined), { json: options.json || program.opts().json });
     } catch (e) { handleError(e); }
+  });
+
+program
+  .command('doctor')
+  .description('Validate environment. Example: wb doctor')
+  .option('--json', 'Output as JSON', false)
+  .action(async (options: { json?: boolean }) => {
+    try { doctorCmd().parse([]); } catch (e) { handleError(e); }
   });
 
 program.parse();
