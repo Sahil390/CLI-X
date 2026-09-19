@@ -6,7 +6,7 @@ import { resolveSourceDir, resolveOutputDir } from '../utils/path.js';
 import { readJson, fileExists, countFiles, getFileSize } from '../utils/fs.js';
 import type { BuildResult } from '../types/index.js';
 
-export async function build(): Promise<void> {
+export async function build(options: { watch?: boolean; json?: boolean } = {}): Promise<void> {
   log.title('Building Site');
   const spinner = createSpinner('Building...');
 
