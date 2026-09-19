@@ -51,3 +51,22 @@ wb login
 
 - Node.js 18+
 - Python 3.10+
+
+## Testing
+
+### TypeScript Tests (CLI)
+
+```bash
+cd website-builder/cli
+npm install
+npm test           # runs Jest
+```
+
+### Python Tests (Backend)
+
+```bash
+cd website-builder/backend
+python3 -m pip install -r requirements.txt
+python3 -m pip install pytest pytest-asyncio httpx   # dev dependencies
+python3 -m pytest tests/ -v
+```
