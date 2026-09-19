@@ -1,72 +1,104 @@
-# Website Builder
+# 🏗️ website-builder
 
-A full-fledged CLI tool for building and deploying websites — powered by a TypeScript CLI interface and a Python backend for AI, authentication, and deployment.
+> **Full-fledged CLI website builder.** Hybrid TypeScript + Python architecture. Initialize, build, deploy, and generate sites — all from one command.
 
-## Quick Start
+---
+
+## ⚡ What It Does
+
+`website-builder` (alias `wb`) is a single-package CLI that combines a TypeScript command-layer with Python-powered build, AI generation, and deployment logic. It installs globally, boots its own `.venv` automatically, and works from any directory.
+
+---
+
+## 🚀 Instant Usage (Zero Install)
+
+Run without installing anything:
 
 ```bash
-# Install (from project root)
-npm run link
-
-# Initialize a new project
-wb init my-site
-
-# Build for production
-wb build
-
-# Start dev server with HMR
-wb dev
-
-# Deploy
-wb deploy --target local
-
-# Generate a page with AI
-wb ai "a landing page for my coffee shop"
-
-# Authenticate
-wb login
+npx website-builder-cli init my-site --template default
 ```
 
-## Commands
-
-| Command | Description |
-|---------|-------------|
-| `wb init [name]` | Scaffold a new website project |
-| `wb build` | Build site for production |
-| `wb dev` | Start dev server with hot reload |
-| `wb deploy [target]` | Deploy to hosting target |
-| `wb login` | Authenticate with provider |
-| `wb logout` | Clear session |
-| `wb ai [prompt]` | Generate page content with AI |
-| `wb config` | View/set configuration |
-| `wb templates` | List available templates |
-
-## Architecture
-
-- **TypeScript CLI** (`cli/`) — Terminal interface, command routing, dev server
-- **Python Backend** (`backend/`) — Auth, AI, build engine, deploy providers
-- **Shared** (`shared/`) — Config schemas and types
-
-## Requirements
-
-- Node.js 18+
-- Python 3.10+
-
-## Testing
-
-### TypeScript Tests (CLI)
+Install globally for daily use:
 
 ```bash
-cd website-builder/cli
+npm install -g website-builder-cli
+wb --help
+```
+
+> **💡 Behind the scenes:** On first invocation the CLI detects `backend/requirements.txt`, creates an isolated `.venv` inside the package directory, runs `pip install`, and then spawns the Python click backend — all silently, so you never manage Python dependencies manually.
+
+---
+
+## 🛠️ Commands & Usage
+
+| Command | Description | Example |
+|---|---|---|
+| `wb init [name]` | Initialize a new site | `wb init my-blog --template blog` |
+| `wb build` | Build for production | `wb build --watch` |
+| `wb dev` | Start dev server | `wb dev --port 3000 --open` |
+| `wb deploy [target]` | Deploy to target | `wb deploy production --rollback 2` |
+| `wb login` | Auth with provider | `wb login --provider github` |
+| `wb logout` | Clear session | `wb logout --provider github` |
+| `wb ai [prompt]` | AI site generation | `wb ai "landing page" --style modern` |
+| `wb config [action]` | View / set config | `wb config --get api_key` |
+| `wb templates [action]` | Manage templates | `wb templates list` |
+| `wb doctor` | Validate environment | `wb doctor --json` |
+
+### Quick Examples
+
+```bash
+# Initialize
+wb init portfolio --template portfolio
+
+# Build & watch
+wb build --watch
+
+# AI generation
+wb ai "modern portfolio landing" --template default --style modern
+
+# Check environment
+wb doctor
+```
+
+---
+
+## 🧠 Under The Hood
+
+```text
+TypeScript (cli/src/cli.ts)  →  Commander.js CLI orchestration
+         ↓  (execa subprocess)
+Python  (backend/backend/cli.py) → Click commands + FastAPI / build engine
+         ↓  (auto .venv bootstrap)
+.venv  (created dynamically on first run)
+```
+
+- **TypeScript layer:** Parses args, validates inputs, renders output, and calls `bridge/python.ts`.
+- **Python layer:** Handles `build_engine`, `deploy_orchestrator`, `ai.generator`, auth, and templates via `click` groups.
+- **Dynamic bootstrap:** `bridge/python.ts` uses `getPackageDir()` (`__dirname`-relative) to locate `backend/`, creates `.venv` if missing, installs requirements, and picks `python3` → `python` fallback for Windows compatibility.
+
+---
+
+## 🧑‍💻 Local Development & Contributing
+
+```bash
+# Clone
+git clone <repo>
+cd website-builder
+
+# Install
 npm install
-npm test           # runs Jest
+
+# Compile TypeScript (ES2022 module)
+npm run build
+
+# Link globally for local testing
+npm link
+wb --help
+
+# Test Python backend manually (from package dir)
+python3 -m backend.cli --help
 ```
 
-### Python Tests (Backend)
+---
 
-```bash
-cd website-builder/backend
-python3 -m pip install -r requirements.txt
-python3 -m pip install pytest pytest-asyncio httpx   # dev dependencies
-python3 -m pytest tests/ -v
-```
+*Licensed under MIT · Built with TypeScript, Python, and zero manual dependency management.*
