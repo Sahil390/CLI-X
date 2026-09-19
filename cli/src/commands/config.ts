@@ -4,7 +4,7 @@ import { resolveGlobalConfigPath, resolveConfigPath, projectRoot } from '../util
 import { prompt, input, select, confirm } from '../ui/prompts.js';
 import type { WbConfig } from '../types/index.js';
 
-export async function config(): Promise<void> {
+export async function config(options?: { action?: string; get?: string; set?: string; json?: boolean }): Promise<void> {
   log.title('Configuration');
 
   const globalConfigPath = expandHomePath(resolveGlobalConfigPath());

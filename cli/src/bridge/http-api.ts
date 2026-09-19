@@ -52,7 +52,7 @@ export class HttpApiClient {
         return { error: `API error ${response.status}: ${errorText}` };
       }
 
-      const data: GenerateResponse = await response.json();
+      const data = await response.json() as GenerateResponse;
       return data;
     } catch (err: any) {
       clearTimeout(timeout);

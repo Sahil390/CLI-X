@@ -7,10 +7,7 @@ export async function ensureDir(dirPath: string): Promise<void> {
 }
 
 export async function copyDir(src: string, dest: string): Promise<void> {
-  await fse.copy(src, dest, {
-    overwrite: true,
-    recursive: true,
-  });
+  await fse.copy(src, dest, { overwrite: true } as any);
 }
 
 export async function readJson(filePath: string): Promise<Record<string, unknown>> {

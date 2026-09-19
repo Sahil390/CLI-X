@@ -9,7 +9,7 @@ const BUILT_IN_TEMPLATES = [
   { name: 'portfolio', description: 'A portfolio site with projects and contact' },
 ];
 
-export async function templates(action?: string): Promise<void> {
+export async function templates(action?: string, options?: { json?: boolean }): Promise<void> {
   log.title('Templates');
 
   switch (action) {

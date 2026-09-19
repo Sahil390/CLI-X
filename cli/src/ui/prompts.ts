@@ -1,6 +1,6 @@
 import inquirer from 'inquirer';
 
-export async function prompt(questions: inquirer.QuestionCollection): Promise<Record<string, unknown>> {
+export async function prompt(questions: any[]): Promise<Record<string, unknown>> {
   return inquirer.prompt(questions);
 }
 

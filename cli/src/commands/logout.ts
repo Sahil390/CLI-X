@@ -3,7 +3,7 @@ import { resolveGlobalConfigPath } from '../utils/path.js';
 import { log } from '../ui/logger.js';
 import { confirm } from '../ui/prompts.js';
 
-export async function logout(provider?: string): Promise<void> {
+export async function logout(provider?: string, options?: { json?: boolean }): Promise<void> {
   log.title('Logout');
 
   const globalConfigPath = expandHomePath(resolveGlobalConfigPath());

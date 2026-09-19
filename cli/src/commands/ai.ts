@@ -1,3 +1,4 @@
+import { callPython } from '../bridge/python.js';
 import { HttpApiClient, GenerateRequest } from '../bridge/http-api.js';
 import { createSpinner, stopWithSuccess, stopWithFailure } from '../ui/spinner.js';
 import { log } from '../ui/logger.js';
@@ -6,7 +7,7 @@ import { projectRoot } from '../utils/path.js';
 import fse from 'fs-extra';
 import path from 'path';
 
-export async function ai(promptText: string, options: { style?: string; template?: string } = {}): Promise<void> {
+export async function ai(promptText: string, options: { style?: string; template?: string; interactive?: boolean; json?: boolean } = {}): Promise<void> {
   log.title('AI Site Generation');
 
   const apiClient = new HttpApiClient();

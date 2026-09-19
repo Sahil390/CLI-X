@@ -1,4 +1,5 @@
 import { callPython } from '../bridge/python.js';
+import path from 'path';
 import { createSpinner, stopWithSuccess, stopWithFailure } from '../ui/spinner.js';
 import { log } from '../ui/logger.js';
 import { readJson } from '../utils/fs.js';
@@ -6,7 +7,7 @@ import { resolveConfigPath, projectRoot } from '../utils/path.js';
 import { fileExists } from '../utils/fs.js';
 import type { DeployResult } from '../types/index.js';
 
-export async function deploy(target?: string): Promise<void> {
+export async function deploy(target?: string, options?: { rollback?: string; json?: boolean }): Promise<void> {
   log.title('Deploying Site');
 
   const configPath = resolveConfigPath();
@@ -30,7 +31,7 @@ export async function deploy(target?: string): Promise<void> {
     return;
   }
 
-  const deployResult: DeployResult = result.data as DeployResult;
+  const deployResult: DeployResult = result.data as unknown as DeployResult;
   stopWithSuccess(spinner, 'Deployment complete');
 
   if (deployResult.success && deployResult.url) {

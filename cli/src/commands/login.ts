@@ -5,7 +5,7 @@ import { readJson, fileExists, expandHomePath } from '../utils/fs.js';
 import { resolveGlobalConfigPath, projectRoot } from '../utils/path.js';
 import type { AuthSession } from '../types/index.js';
 
-export async function login(provider?: string): Promise<void> {
+export async function login(provider?: string, options?: { json?: boolean }): Promise<void> {
   log.title('Authentication');
 
   const globalConfigPath = expandHomePath(resolveGlobalConfigPath());
@@ -66,11 +66,7 @@ async function loginApiKey(): Promise<void> {
   log.info('API Key authentication');
   log.dim('You can get your API key from your provider dashboard.');
 
-  const token = await prompt({
-    type: 'password',
-    name: 'token',
-    message: 'Enter your API key',
-  });
+  const token = await prompt([{ type: 'password', name: 'token', message: 'Enter your API key' } as any]);
 
   const globalConfigPath = expandHomePath(resolveGlobalConfigPath());
   let config: Record<string, any> = {};

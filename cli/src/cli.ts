@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import path from 'path';
 import { init } from './commands/init.js';
 import { build } from './commands/build.js';
 import { dev } from './commands/dev.js';
@@ -9,14 +10,10 @@ import { logout } from './commands/logout.js';
 import { ai } from './commands/ai.js';
 import { doctorCmd } from './commands/doctor.js';
 import { loadConfig } from './utils/config.js';
-import { machineOutput } from './utils/output.js';
 import { config } from './commands/config.js';
 import { templates } from './commands/templates.js';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { loadConfig } from './utils/config.js';
 
-const __filename = fileURLToPath(import.meta.url);
+const __filename = path.resolve('src/cli.ts');
 const __dirname = path.dirname(__filename);
 
 const program = new Command();
@@ -123,7 +120,7 @@ program
         console.error(out);
         process.exit(1);
       }
-      await ai(prompt, { style: options.style, template: options.template, interactive: options.interactive, json: options.json || program.opts().json });
+      await ai(prompt || '', { style: options.style, template: options.template, interactive: options.interactive, json: options.json || program.opts().json });
     } catch (e) { handleError(e); }
   });
 
@@ -155,7 +152,7 @@ program
   .description('Validate environment. Example: wb doctor')
   .option('--json', 'Output as JSON', false)
   .action(async (options: { json?: boolean }) => {
-    try { doctorCmd().parse([]); } catch (e) { handleError(e); }
+    try { await doctorCmd().parseAsync(process.argv.slice(2)); } catch (e) { handleError(e); }
   });
 
 program.parse();
