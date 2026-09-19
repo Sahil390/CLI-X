@@ -12,8 +12,15 @@ interface DevServerOptions {
   open?: boolean;
 }
 
-export async function dev(options: DevServerOptions = {}): Promise<void> {
-  const port = options.port || 3000;
+export async function dev(options: DevServerOptions & { json?: boolean } = {}): Promise<void> {
+  const rawPort = options.port || 3000;
+  const port = typeof rawPort === 'number' ? rawPort : parseInt(rawPort as unknown as string, 10);
+  if (Number.isNaN(port) || port < 1024 || port > 65535) {
+    const msg = `Invalid port: ${rawPort}. Must be 1024-65535.`;
+    if (options.json) console.log(JSON.stringify({ error: msg, code: 'DEV_ERROR' }));
+    else console.error(msg);
+    process.exit(1);
+  }
   const inputDir = resolveSourceDir();
   const outputDir = resolveOutputDir();
 
@@ -79,6 +86,9 @@ export async function dev(options: DevServerOptions = {}): Promise<void> {
     broadcastChange(filePath);
   });
 
+  if (options.json) {
+    console.log(JSON.stringify({ status: 'dev_server_started', port, inputDir, outputDir }));
+  }
   await new Promise<void>((resolve) => {
     server.listen(port, () => {
       log.success(`Dev server running at http://localhost:${port}`);

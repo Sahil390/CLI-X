@@ -16,7 +16,10 @@ export async function build(options: { watch?: boolean; json?: boolean } = {}): 
   if (!(await fileExists(inputDir))) {
     spinner.fail(`Source directory not found: ${inputDir}`);
     log.error('Run "wb init" first or create a src/ directory.');
-    return;
+    const msg = `Build failed: source directory missing (${inputDir}). State: inputDir=${inputDir}, outputDir=${outputDir}`;
+    if (options.json) console.log(JSON.stringify({ error: msg, code: 'BUILD_ERROR', state: { inputDir, outputDir } }));
+    else console.error(msg);
+    process.exit(1);
   }
 
   const startTime = Date.now();
@@ -30,8 +33,10 @@ export async function build(options: { watch?: boolean; json?: boolean } = {}): 
 
   if (!result.success || !result.data) {
     stopWithFailure(spinner, 'Build failed');
-    log.error(result.error || 'Unknown error');
-    return;
+    const msg = `Build failed: ${result.error || 'Unknown error'}. State: inputDir=${inputDir}, outputDir=${outputDir}`;
+    if (options.json) console.log(JSON.stringify({ error: msg, code: 'BUILD_ERROR', state: { inputDir, outputDir } }));
+    else log.error(msg);
+    process.exit(1);
   }
 
   const buildResult: BuildResult = {
@@ -47,13 +52,16 @@ export async function build(options: { watch?: boolean; json?: boolean } = {}): 
   const fileCount = buildResult.files || (await countFiles(outputDir));
   const totalSize = buildResult.sizeBytes || (await getFileSize(outputDir));
 
-  log.success(`Output: ${outputDir}`);
-  log.info(`Files: ${fileCount} | Size: ${formatBytes(totalSize)} | Time: ${duration}ms`);
-
-  if (buildResult.errors.length > 0) {
-    log.warn(`Warnings (${buildResult.errors.length}):`);
-    for (const err of buildResult.errors) {
-      log.dim(`  - ${err}`);
+  if (options.json) {
+    console.log(JSON.stringify({ status: 'build_complete', files: buildResult.files, sizeBytes: buildResult.sizeBytes, duration, outputDir, errors: buildResult.errors }));
+  } else {
+    log.success(`Output: ${outputDir}`);
+    log.info(`Files: ${fileCount} | Size: ${formatBytes(totalSize)} | Time: ${duration}ms`);
+    if (buildResult.errors.length > 0) {
+      log.warn(`Warnings (${buildResult.errors.length}):`);
+      for (const err of buildResult.errors) {
+        log.dim(`  - ${err}`);
+      }
     }
   }
 }

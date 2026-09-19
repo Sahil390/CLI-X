@@ -103,7 +103,7 @@ program
 
 program
   .command('ai [prompt]')
-  .description('Generate site content with AI. Example: wb ai "landing page" --style modern')
+  .description('Generate site content with AI. Usage: wb ai "landing page" --style modern --json')
   .option('-s, --style <style>', 'Style preference')
   .option('-t, --template <template>', 'Template to use')
   .option('--interactive', 'Force interactive mode', false)
@@ -111,7 +111,9 @@ program
   .action(async (prompt: string | undefined, options: { style?: string; template?: string; interactive?: boolean; json?: boolean }) => {
     try {
       if (!prompt && !options.interactive) {
-        console.error('Error: AI prompt required. Usage: wb ai "your prompt"');
+        const msg = 'Error: AI prompt required. Usage: wb ai "your prompt" --json';
+        const out = (program.opts().json ? JSON.stringify({ error: msg, code: 'CLI_ERROR' }) : msg);
+        console.error(out);
         process.exit(1);
       }
       await ai(prompt, { style: options.style, template: options.template, interactive: options.interactive, json: options.json || program.opts().json });
