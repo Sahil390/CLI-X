@@ -3,7 +3,7 @@ import json
 from typing import Dict, Any
 from dotenv import load_dotenv
 from .session import SessionManager
-from browser import get_auth_url, start_callback_server, open_browser
+from .browser import get_auth_url, start_callback_server, open_browser
 
 load_dotenv()
 
