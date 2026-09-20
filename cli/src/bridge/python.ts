@@ -29,19 +29,9 @@ export interface PythonCallResult {
 }
 
 function getPackageDir(): string {
-  // Resolve from compiled dist/ file: __dirname is .../dist/bridge/ → parent = .../dist → parent = package root
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
-  // If running from src/ via ts-node, go up one extra; if from dist/ go up two to package root
-  // We detect by checking if ../backend exists relative to __dirname
-  const candidate = resolve(__dirname, '..', '..', '..', 'backend');
-  const fromDist = path.resolve(__dirname, '../../backend/backend/cli.py');
-  const pythonScriptPath = path.resolve(__dirname, '../../backend/backend/cli.py');
-  if (existsSync(fromDist)) return candidate;
-  // src/ case: __dirname = cli/src/bridge/ → go up 2 = cli/
-  const srcCandidate = resolve(__dirname, '..', '..');
-  if (existsSync(resolve(srcCandidate, '../backend/requirements.txt'))) return srcCandidate;
-  return candidate;
+  return resolve(__dirname, '..', '..');
 }
 
 function getPythonBin(): string {
@@ -55,8 +45,8 @@ function getPythonBin(): string {
 }
 
 async function ensureVenv(packageDir: string, pythonCmd: string): Promise<void> {
-  const venvDir = resolve(packageDir, 'backend/.venv');
-  const requirementsPath = path.resolve(packageDir, 'backend/requirements.txt');
+  const venvDir = resolve(packageDir, '..', 'backend/.venv');
+  const requirementsPath = path.resolve(packageDir, '..', 'backend/requirements.txt');
   if (!existsSync(requirementsPath)) {
     log.dim('  No backend/requirements.txt found; skipping venv setup.');
     return;
@@ -76,7 +66,7 @@ export async function callPython(options: PythonCallOptions): Promise<PythonCall
   const { modulePath, args = [], cwd, timeout = 30000, env = {} } = options;
   const safeArgs = args.map(sanitizeArg);
   const packageDir = getPackageDir();
-  const venvDir = path.resolve(packageDir, 'backend/.venv');
+  const venvDir = path.resolve(packageDir, '..', 'backend/.venv');
   const venvPython = path.resolve(venvDir, process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
 
   // Crucial: Use the venv Python if it exists, otherwise fallback
@@ -135,7 +125,7 @@ export async function callPythonScript(scriptPath: string, args: string[] = []):
   await ensureVenv(packageDir, pythonPath);
 
   try {
-    const venvDir = resolve(packageDir, '.venv');
+    const venvDir = resolve(packageDir, '..', 'backend', '.venv');
     const venvPython = resolve(venvDir, process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
     const pythonExe = existsSync(venvPython) ? venvPython : pythonPath;
 
