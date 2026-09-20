@@ -52,7 +52,7 @@ function getPythonBin(): string {
 
 async function ensureVenv(packageDir: string, pythonCmd: string): Promise<void> {
   const venvDir = resolve(packageDir, '.venv');
-  const reqFile = resolve(packageDir, 'backend', 'requirements.txt');
+  const reqFile = path.resolve(packageDir, 'cli', 'backend', 'requirements.txt');
   if (!existsSync(reqFile)) {
     log.dim('  No backend/requirements.txt found; skipping venv setup.');
     return;
