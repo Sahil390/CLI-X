@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+'use strict';
+
+const path = require('path');
+const distPath = path.resolve(__dirname, '../dist/index.js');
+
+try {
+  require(distPath);
+} catch (e) {
+  process.stderr.write(`cli-x: failed to start — ${e.message}\n`);
+  process.stderr.write('  Fix: rebuild with "npm run build" then retry.\n');
+  process.exit(1);
+}

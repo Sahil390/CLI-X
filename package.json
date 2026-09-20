@@ -1,1 +1,42 @@
-{"name":"website-builder","version":"0.1.0","private":true,"workspaces":["cli","backend"],"scripts":{"publish":"npm publish --workspaces --access public","build":"npm run -w cli build","postinstall":"echo \"Install Python backend: pip install -r backend/requirements.txt\""},"files":["cli/","backend/","bin/"],"publishConfig":{"access":"public","registry":"https://registry.npmjs.org/"},"keywords":["cli","website","build","deploy","static-site"]}
+{
+  "name": "cli-x",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CLI-X — AI-Native CLI Development Agent for website projects.",
+  "main": "dist/index.js",
+  "bin": {
+    "cli-x": "./bin/cli-x",
+    "wb": "./bin/cli-x",
+    "website-builder": "./bin/cli-x"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "node -r ts-node/register src/index.ts",
+    "start": "node dist/index.js",
+    "test": "jest --config jest.config.cjs --runInBand",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "link": "npm link"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^13.0.0",
+    "execa": "^5.1.1",
+    "fs-extra": "^11.2.0",
+    "ora": "^5.4.1",
+    "inquirer": "^8.2.6"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^8.2.10",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.0.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.0"
+  }
+}
