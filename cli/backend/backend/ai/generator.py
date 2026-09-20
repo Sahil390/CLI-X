@@ -145,3 +145,43 @@ def generate_page(name: str, content: str, style: str = 'modern') -> Dict[str, A
         'css': css,
         'js': js,
     }
+
+
+def generate_site_contextual(prompt: str, output_dir: str = 'src', style: str = 'modern', template: str = 'default') -> Dict[str, Any]:
+    from pathlib import Path
+    import os
+    
+    # Read existing context files
+    html_path = Path(output_dir) / 'index.html'
+    css_path = Path(output_dir) / 'style.css'
+    
+    current_html = html_path.read_text(encoding='utf-8') if html_path.exists() else ''
+    current_css = css_path.read_text(encoding='utf-8') if css_path.exists() else ''
+    
+    system_prompt = """
+    You are an expert web developer specializing in creating beautiful, single-file HTML websites with modern CSS. A user will provide you with their current HTML and CSS, along with a request for a change.
+
+    Your task is to return a complete, new HTML file that incorporates the requested change. The HTML file must include the CSS within a <style> tag in the <head>. Do not omit any part of the original file unless instructed to. Ensure your response is only the raw HTML code and nothing else.
+    """
+    
+    user_prompt = f"""
+    Here is the current website's HTML:
+    <HTML>
+    {current_html}
+    </HTML>
+
+    Here is the current website's CSS:
+    <CSS>
+    {current_css}
+    </CSS>
+
+    The user has requested the following change: '{prompt}'
+
+    Please provide the new, complete HTML file that incorporates this change.
+    """
+    
+    return {
+        'system_prompt': system_prompt,
+        'user_prompt': user_prompt,
+        'context': {'html': current_html, 'css': current_css}
+    }
