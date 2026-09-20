@@ -1,4 +1,4 @@
-from ..providers.base import get_provider
+from backend.deploy.providers.base import get_provider
 from typing import Dict, Any
 import json
 import time
