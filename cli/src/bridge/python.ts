@@ -66,6 +66,8 @@ export async function callPython(options: PythonCallOptions): Promise<PythonCall
   const { modulePath, args = [], cwd, timeout = 30000, env = {} } = options;
   const safeArgs = args.map(sanitizeArg);
   const packageDir = getPackageDir();
+  const backendDir = path.resolve(packageDir, '..', 'backend');
+  const innerBackendDir = path.resolve(backendDir, 'backend');
   const venvDir = path.resolve(packageDir, '..', 'backend/.venv');
   const venvPython = path.resolve(venvDir, process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
 
@@ -81,7 +83,7 @@ export async function callPython(options: PythonCallOptions): Promise<PythonCall
   const childEnv = {
     ...process.env,
     ...env,
-    PYTHONPATH: [packageDir, process.env.PYTHONPATH].filter(Boolean).join(path.delimiter),
+    PYTHONPATH: [backendDir, innerBackendDir, process.env.PYTHONPATH].filter(Boolean).join(path.delimiter),
   };
 
   try {
@@ -125,6 +127,8 @@ export async function callPythonScript(scriptPath: string, args: string[] = []):
   await ensureVenv(packageDir, pythonPath);
 
   try {
+    const backendDir = path.resolve(packageDir, '..', 'backend');
+    const innerBackendDir = path.resolve(backendDir, 'backend');
     const venvDir = resolve(packageDir, '..', 'backend', '.venv');
     const venvPython = resolve(venvDir, process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
     const pythonExe = existsSync(venvPython) ? venvPython : pythonPath;
@@ -134,7 +138,7 @@ export async function callPythonScript(scriptPath: string, args: string[] = []):
       timeout: 30000,
       env: {
         ...process.env,
-        PYTHONPATH: [packageDir, process.env.PYTHONPATH].filter(Boolean).join(path.delimiter),
+        PYTHONPATH: [backendDir, innerBackendDir, process.env.PYTHONPATH].filter(Boolean).join(path.delimiter),
       },
       reject: false,
     });
