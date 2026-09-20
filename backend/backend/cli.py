@@ -2,7 +2,7 @@ import click
 import json
 import os
 import sys
-from backend.backend.ai.generator import generate_site_contextual
+from backend.ai.generator import generate_site_contextual
 import time
 
 from backend.auth.oauth import authenticate
