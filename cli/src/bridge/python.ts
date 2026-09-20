@@ -80,11 +80,17 @@ export async function callPython(options: PythonCallOptions): Promise<PythonCall
 
   log.dim(`  Python: ${pythonPath} -m ${modulePath} ${args.join(' ')}`);
 
+  const childEnv = {
+    ...process.env,
+    ...env,
+    PYTHONPATH: [packageDir, process.env.PYTHONPATH].filter(Boolean).join(path.delimiter),
+  };
+
   try {
     const result = await execa(pythonPath, ['-m', modulePath, ...args], {
       cwd: fullCwd,
       timeout,
-      env: { ...process.env, ...env },
+      env: childEnv,
       reject: false,
     });
 
@@ -128,6 +134,10 @@ export async function callPythonScript(scriptPath: string, args: string[] = []):
     const result = await execa(pythonExe, [targetPath, ...safeArgs], {
       cwd: process.cwd(),
       timeout: 30000,
+      env: {
+        ...process.env,
+        PYTHONPATH: [packageDir, process.env.PYTHONPATH].filter(Boolean).join(path.delimiter),
+      },
       reject: false,
     });
 
