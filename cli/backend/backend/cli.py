@@ -12,6 +12,9 @@ from backend.ai.generator import generate_site
 from backend.config.loader import load_global_config, load_project_config, save_global_config
 
 
+from backend.ai.generator import generate_site_contextual
+
+
 IS_TTY = sys.stdout.isatty()
 class Exit: OK, GENERAL=0,1
 @click.group()
@@ -78,7 +81,7 @@ def build(input, output, template, minify):
 @click.option('--template', default='default', help='Template')
 def ai(prompt, output, style, template):
     """Generate site content with AI"""
-    result = generate_site(prompt, style, template)
+    result = generate_site_contextual(prompt, output)
     click.echo(json.dumps(result))
 
 @cli.command()

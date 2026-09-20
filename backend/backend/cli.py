@@ -78,7 +78,7 @@ def build(input, output, template, minify):
 @click.option('--template', default='default', help='Template')
 def ai(prompt, output, style, template):
     """Generate site content with AI"""
-    result = generate_site(prompt, style, template)
+    result = generate_site_contextual(prompt, output)
     click.echo(json.dumps(result))
 
 @cli.command()
