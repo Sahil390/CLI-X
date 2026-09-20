@@ -15,16 +15,49 @@ interface DevServerOptions {
 }
 
 async function ensureApiKey(): Promise<void> {
-  if (process.env.OPENAI_API_KEY) return;
+  if (process.env.AI_PROVIDER && process.env.AI_API_KEY) return;
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  console.log('\n🔑 API Key required to run the AI site builder.');
-  const key = await new Promise<string>((resolve) => {
-    rl.question('Enter your API Key: ', (input: string) => {
-      resolve(input.trim());
+
+  if (!process.env.AI_PROVIDER) {
+    console.log('\n🔑 AI provider required.');
+    const providerChoice = await new Promise<string>((resolve) => {
+      rl.question('Which AI provider do you prefer? (1) OpenAI, (2) Anthropic, (3) Gemini\nChoice: ', (input: string) => {
+        const val = input.trim();
+        if (val === '1' || val.toLowerCase() === 'openai') resolve('openai');
+        else if (val === '2' || val.toLowerCase() === 'anthropic') resolve('anthropic');
+        else if (val === '3' || val.toLowerCase() === 'gemini') resolve('gemini');
+        else resolve('openai');
+      });
     });
-  });
-  process.env.OPENAI_API_KEY = key;
+    process.env.AI_PROVIDER = providerChoice;
+  }
+
+  if (!process.env.AI_API_KEY) {
+    console.log('Enter your API Key: ');
+    const key = await new Promise<string>((resolve) => {
+      rl.question('Enter your API Key: ', (input: string) => {
+        resolve(input.trim());
+      });
+    });
+    process.env.AI_API_KEY = key;
+  }
+
+  // Persist to project config file
+  try {
+    const configPath = path.join(process.cwd(), 'website-builder.config.json');
+    let config: any = {};
+    if (fs.existsSync(configPath)) {
+      config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    }
+    config.ai = config.ai || {};
+    config.ai.provider = process.env.AI_PROVIDER;
+    config.ai.apiKey = process.env.AI_API_KEY;
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+  } catch (e) {
+    // Non-fatal: config persistence is optional
+  }
+
   rl.close();
 }
 

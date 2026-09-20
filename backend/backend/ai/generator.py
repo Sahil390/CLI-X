@@ -1,3 +1,6 @@
+import litellm
+import os
+import re
 import json
 from pathlib import Path
 from typing import Dict, Any
@@ -147,68 +150,62 @@ def generate_page(name: str, content: str, style: str = 'modern') -> Dict[str, A
     }
 
 
+
+
 def generate_site_contextual(prompt: str, output_dir: str = 'src', style: str = 'modern', template: str = 'default') -> Dict[str, Any]:
-    from pathlib import Path
+    import litellm
     import os
-    
-    # Read existing context files
-    html_path = Path(output_dir) / 'index.html'
-    css_path = Path(output_dir) / 'style.css'
-    
-    current_html = html_path.read_text(encoding='utf-8') if html_path.exists() else ''
-    current_css = css_path.read_text(encoding='utf-8') if css_path.exists() else ''
-    
-    system_prompt = """
-    You are an expert web developer specializing in creating beautiful, single-file HTML websites with modern CSS. A user will provide you with their current HTML and CSS, along with a request for a change.
-
-    Your task is to return a complete, new HTML file that incorporates the requested change. The HTML file must include the CSS within a <style> tag in the <head>. Do not omit any part of the original file unless instructed to. Ensure your response is only the raw HTML code and nothing else.
-    """
-    
-    user_prompt = f"""
-    Here is the current website's HTML:
-    <HTML>
-    {current_html}
-    </HTML>
-
-    Here is the current website's CSS:
-    <CSS>
-    {current_css}
-    </CSS>
-
-    The user has requested the following change: '{prompt}'
-
-    Please provide the new, complete HTML file that incorporates this change.
-    """
-    
-    return {
-        'system_prompt': system_prompt,
-        'user_prompt': user_prompt,
-        'context': {'html': current_html, 'css': current_css}
-    }
-
-
-def generate_site_contextual(prompt: str, output_dir: str = 'src', style: str = 'modern', template: str = 'default') -> Dict[str, Any]:
+    import re
     from pathlib import Path
-    from openai import OpenAI
-    import os, re
-    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+    provider = (os.environ.get("AI_PROVIDER") or "openai").lower()
+    api_key = os.environ.get("AI_API_KEY") or ""
+
+    if provider == "openai":
+        os.environ["OPENAI_API_KEY"] = api_key
+        chosen_model = "gpt-4o"
+    elif provider == "anthropic":
+        os.environ["ANTHROPIC_API_KEY"] = api_key
+        chosen_model = "claude-3-5-sonnet-20240620"
+    elif provider == "gemini":
+        os.environ["GEMINI_API_KEY"] = api_key
+        chosen_model = "gemini/gemini-1.5-pro"
+    else:
+        os.environ["OPENAI_API_KEY"] = api_key
+        chosen_model = "gpt-4o"
+
     html_path = Path(output_dir) / 'index.html'
     css_path = Path(output_dir) / 'style.css'
+    html_path.parent.mkdir(parents=True, exist_ok=True)
+
     current_html = html_path.read_text(encoding='utf-8') if html_path.exists() else ''
     current_css = css_path.read_text(encoding='utf-8') if css_path.exists() else ''
-    system = "You are an expert web developer. Return only raw HTML with inline <style>. Do not wrap in markdown."
-    user = f"HTML:\n{current_html}\nCSS:\n{current_css}\nRequest: {prompt}\nReturn complete HTML file with <style> in <head>."
-    resp = client.chat.completions.create(model="gpt-4o", messages=[{"role":"system","content":system},{"role":"user","content":user}])
-    raw = resp.choices[0].message.content or ""
-    clean = re.sub(r"```(?:html)?\n?|```", "", raw).strip()
-    # Write inline HTML with embedded CSS
-    html_with_style = clean if "<style>" in clean else f"<head><style>\n{current_css}\n</style></head>\n{clean}"
-    html_path.parent.mkdir(parents=True, exist_ok=True)
-    html_path.write_text(html_with_style, encoding='utf-8')
-    # Extract CSS if separate block present; else write current
+
+    system_prompt = (
+        "You are an expert frontend developer. Output ONLY raw HTML/CSS. "
+        "Do not wrap your response in markdown code blocks. Include all CSS inside a <style> tag in <head> if needed."
+    )
+    user_content = (
+        f"Current HTML:\n{current_html}\n\nCurrent CSS:\n{current_css}\n\nRequest: {prompt}\n\nProvide the complete updated HTML file."
+    )
+
+    response = litellm.completion(
+        model=chosen_model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_content},
+        ],
+    )
+    raw_text = response.choices[0].message.content or ""
+    clean = re.sub(r"```(?:html)?\n?|```", "", raw_text).strip()
+
+    # Write HTML (with embedded style if separate CSS not extracted)
+    html_path.write_text(clean if clean.startswith("<!DOCTYPE") or "<html" in clean else f"<!DOCTYPE html>\n<html><head><style>\n{current_css}\n</style></head><body>{clean}</body></html>", encoding='utf-8')
+    # Try to extract CSS block if present
     css_match = re.search(r"<style>(.*?)</style>", clean, re.DOTALL)
     if css_match:
         css_path.write_text(css_match.group(1).strip(), encoding='utf-8')
     else:
         css_path.write_text(current_css or "", encoding='utf-8')
+
     return {'success': True, 'files': {'index.html': str(html_path), 'style.css': str(css_path)}}
