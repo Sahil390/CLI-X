@@ -33,6 +33,7 @@ function getPackageDir(): string {
   // We detect by checking if ../backend exists relative to __dirname
   const candidate = resolve(__dirname, '..', '..', '..', 'backend');
   const fromDist = path.resolve(__dirname, '../../backend/backend/cli.py');
+  const pythonScriptPath = path.resolve(__dirname, '../../backend/backend/cli.py');
   if (existsSync(fromDist)) return candidate;
   // src/ case: __dirname = cli/src/bridge/ → go up 2 = cli/
   const srcCandidate = resolve(__dirname, '..', '..');
@@ -52,8 +53,8 @@ function getPythonBin(): string {
 
 async function ensureVenv(packageDir: string, pythonCmd: string): Promise<void> {
   const venvDir = resolve(packageDir, '.venv');
-  const reqFile = path.resolve(packageDir, 'cli', 'backend', 'requirements.txt');
-  if (!existsSync(reqFile)) {
+  const requirementsPath = path.resolve(__dirname, '../../backend/requirements.txt');
+  if (!existsSync(requirementsPath)) {
     log.dim('  No backend/requirements.txt found; skipping venv setup.');
     return;
   }
@@ -65,7 +66,7 @@ async function ensureVenv(packageDir: string, pythonCmd: string): Promise<void> 
   const venvPython = resolve(venvDir, process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
   const pythonExe = existsSync(venvPython) ? venvPython : pythonCmd;
   log.dim(`  Installing python requirements via ${pythonExe} ...`);
-  await execa(pythonExe, ['-m', 'pip', 'install', '-q', '-r', reqFile], { stdio: 'inherit', reject: false });
+  await execa(pythonExe, ['-m', 'pip', 'install', '-q', '-r', requirementsPath], { stdio: 'inherit', reject: false });
 }
 
 export async function callPython(options: PythonCallOptions): Promise<PythonCallResult> {
