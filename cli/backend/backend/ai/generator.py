@@ -185,3 +185,30 @@ def generate_site_contextual(prompt: str, output_dir: str = 'src', style: str = 
         'user_prompt': user_prompt,
         'context': {'html': current_html, 'css': current_css}
     }
+
+
+def generate_site_contextual(prompt: str, output_dir: str = 'src', style: str = 'modern', template: str = 'default') -> Dict[str, Any]:
+    from pathlib import Path
+    from openai import OpenAI
+    import os, re
+    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    html_path = Path(output_dir) / 'index.html'
+    css_path = Path(output_dir) / 'style.css'
+    current_html = html_path.read_text(encoding='utf-8') if html_path.exists() else ''
+    current_css = css_path.read_text(encoding='utf-8') if css_path.exists() else ''
+    system = "You are an expert web developer. Return only raw HTML with inline <style>. Do not wrap in markdown."
+    user = f"HTML:\n{current_html}\nCSS:\n{current_css}\nRequest: {prompt}\nReturn complete HTML file with <style> in <head>."
+    resp = client.chat.completions.create(model="gpt-4o", messages=[{"role":"system","content":system},{"role":"user","content":user}])
+    raw = resp.choices[0].message.content or ""
+    clean = re.sub(r"```(?:html)?\n?|```", "", raw).strip()
+    # Write inline HTML with embedded CSS
+    html_with_style = clean if "<style>" in clean else f"<head><style>\n{current_css}\n</style></head>\n{clean}"
+    html_path.parent.mkdir(parents=True, exist_ok=True)
+    html_path.write_text(html_with_style, encoding='utf-8')
+    # Extract CSS if separate block present; else write current
+    css_match = re.search(r"<style>(.*?)</style>", clean, re.DOTALL)
+    if css_match:
+        css_path.write_text(css_match.group(1).strip(), encoding='utf-8')
+    else:
+        css_path.write_text(current_css or "", encoding='utf-8')
+    return {'success': True, 'files': {'index.html': str(html_path), 'style.css': str(css_path)}}
