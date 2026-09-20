@@ -75,14 +75,16 @@ async function ensureVenv(packageDir: string, pythonCmd: string): Promise<void> 
 export async function callPython(options: PythonCallOptions): Promise<PythonCallResult> {
   const { modulePath, args = [], cwd, timeout = 30000, env = {} } = options;
   const safeArgs = args.map(sanitizeArg);
-  const pythonPath = process.env.WB_PYTHON || getPythonBin();
   const packageDir = getPackageDir();
+  const venvDir = path.resolve(packageDir, '.venv');
+  const venvPython = path.resolve(venvDir, process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
+  const pythonCommand = existsSync(venvPython) ? venvPython : (process.platform === 'win32' ? 'python' : 'python3');
   const fullCwd = cwd ? expandHomePath(cwd) : process.cwd();
 
   // Dynamic venv setup
-  await ensureVenv(packageDir, pythonPath);
+  await ensureVenv(packageDir, pythonCommand);
 
-  log.dim(`  Python: ${pythonPath} -m ${modulePath} ${args.join(' ')}`);
+  log.dim(`  Python: ${pythonCommand} -m ${modulePath} ${args.join(' ')}`);
 
   const childEnv = {
     ...process.env,
@@ -91,7 +93,7 @@ export async function callPython(options: PythonCallOptions): Promise<PythonCall
   };
 
   try {
-    const result = await execa(pythonPath, ['-m', modulePath, ...args], {
+    const result = await execa(pythonCommand, ['-m', modulePath, ...args], {
       cwd: fullCwd,
       timeout,
       env: childEnv,
