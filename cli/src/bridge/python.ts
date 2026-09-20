@@ -1,5 +1,6 @@
 import { execa } from 'execa';
 import { existsSync, statSync } from 'fs';
+import path from 'path';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { expandHomePath } from '../utils/fs.js';
@@ -31,7 +32,7 @@ function getPackageDir(): string {
   // If running from src/ via ts-node, go up one extra; if from dist/ go up two to package root
   // We detect by checking if ../backend exists relative to __dirname
   const candidate = resolve(__dirname, '..', '..', '..', 'backend');
-  const fromDist = resolve(__dirname, '../backend/backend/cli.py');
+  const fromDist = path.resolve(__dirname, '../../backend/backend/cli.py');
   if (existsSync(fromDist)) return candidate;
   // src/ case: __dirname = cli/src/bridge/ → go up 2 = cli/
   const srcCandidate = resolve(__dirname, '..', '..');

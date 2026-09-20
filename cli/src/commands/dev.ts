@@ -14,6 +14,20 @@ interface DevServerOptions {
   open?: boolean;
 }
 
+async function ensureApiKey(): Promise<void> {
+  if (process.env.OPENAI_API_KEY) return;
+
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  console.log('\n🔑 API Key required to run the AI site builder.');
+  const key = await new Promise<string>((resolve) => {
+    rl.question('Enter your API Key: ', (input: string) => {
+      resolve(input.trim());
+    });
+  });
+  process.env.OPENAI_API_KEY = key;
+  rl.close();
+}
+
 export async function dev(options: DevServerOptions & { json?: boolean } = {}): Promise<void> {
   const rawPort = options.port || 3000;
   const port = typeof rawPort === 'number' ? rawPort : parseInt(rawPort as unknown as string, 10);
@@ -26,21 +40,11 @@ export async function dev(options: DevServerOptions & { json?: boolean } = {}): 
   const inputDir = resolveSourceDir();
   const outputDir = resolveOutputDir();
 
+  await ensureApiKey();
+
   log.title('Starting Dev Server');
   log.info(`Port: ${port}`);
   log.info(`Watching: ${inputDir}`);
-
-  // Check API key — prompt if missing
-  if (!process.env.OPENAI_API_KEY) {
-    const keyRl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    console.log('\n🔑 OpenAI API Key is required to run the AI Site Builder.');
-    keyRl.question('Enter your API Key: ', (key: string) => {
-      process.env.OPENAI_API_KEY = key.trim();
-      console.log('✅ Key saved to process.env and config.');
-      try { const { saveConfig } = require('../utils/config.js'); saveConfig({ openai_api_key: key.trim() }); } catch { /* optional */ }
-      keyRl.close();
-    });
-  }
 
   await fs.promises.mkdir(outputDir, { recursive: true });
 
